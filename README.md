@@ -2,7 +2,7 @@
 
 ---
 
-Erlang with SQL, inspired by (yesql)[https://github.com/krisajenkins/yesql].
+Erlang with SQL, inspired by [yesql](https://github.com/krisajenkins/yesql).
 
 ---
 
