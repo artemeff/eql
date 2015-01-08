@@ -1,0 +1,8 @@
+{application, eql,
+  [ {description, "Erlang with SQL"}
+  , {vsn, git}
+  , {registered, []}
+  , {applications, [kernel, stdlib]}
+  , {mod, {eql_app, []}}
+  , {env, []}
+  ]}.

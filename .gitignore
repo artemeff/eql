@@ -1,0 +1,6 @@
+*.beam
+*.app
+.rebar
+.eunit
+/deps
+erl_crash.dump
