@@ -4,8 +4,12 @@
         ]).
 
 compile(File) ->
-    {ok, Source} = file:read_file(File),
-    eql_compiler:compile(Source).
+    case file:read_file(File) of
+        {ok, Source} -> eql_compiler:compile(Source);
+        Error        -> Error
+    end.
 
-get_query(Name, Queries) ->
-    proplists:get_value(Name, Queries).
+get_query(Name, {ok, Proplist}) ->
+    proplists:get_value(Name, Proplist);
+get_query(Name, Proplist) ->
+    proplists:get_value(Name, Proplist).
