@@ -1,7 +1,7 @@
 -module(eql_compiler_tests).
 -include_lib("eunit/include/eunit.hrl").
 
-std_cache_test_() -> {setup,
+eql_compiler_test_() -> {setup,
     fun start/0, fun stop/1,
     [ fun test_compile/0
     , fun test_file/0

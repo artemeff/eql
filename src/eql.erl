@@ -9,7 +9,5 @@ compile(File) ->
         Error        -> Error
     end.
 
-get_query(Name, {ok, Proplist}) ->
-    proplists:get_value(Name, Proplist);
 get_query(Name, Proplist) ->
     proplists:get_value(Name, Proplist).
