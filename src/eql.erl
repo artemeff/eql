@@ -10,5 +10,7 @@ compile(File) ->
     end.
 
 get_query(Name, Proplist) ->
-    {Name, Value} = lists:keyfind(Name, 1, Proplist),
-    Value.
+    case lists:keyfind(Name, 1, Proplist) of
+        {Name, Value} -> Value;
+        false -> undefined
+    end.
