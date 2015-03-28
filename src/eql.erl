@@ -10,4 +10,5 @@ compile(File) ->
     end.
 
 get_query(Name, Proplist) ->
-    proplists:get_value(Name, Proplist).
+    {Name, Value} = lists:keyfind(Name, 1, Proplist),
+    Value.
