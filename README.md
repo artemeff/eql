@@ -12,7 +12,7 @@ Suppose we have a database with a list of users, in Erlang we can use simple ORM
 
 ```erlang
 get_users(Conn) ->
-  pgsql:squery(Conn, "SELECT * FROM users;").
+    pgsql:squery(Conn, "SELECT * FROM users;").
 ```
 
 Or something like that. __yesql__ proposes to write SQL queries by your hands, but do it comfortably. Because most of ORM and SQL builders adds some [accidental complexity](http://en.wikipedia.org/wiki/No_Silver_Bullet) to your software, ORM or builder should parse your code into SQL and then your RDBMS should parse SQL, also write a complex query in ORM - is pure hell, sometimes. That's why you should use pure SQL with some handy features, like that:
@@ -41,6 +41,60 @@ In Erlang you can use this queries like functions:
 > Q2.
 %> "SELECT * FROM users WHERE id = ?"
 ```
+
+---
+
+### Not only for SQL
+
+This library can provide anything you want with separated sections in file, eg for ENV-specific configuration:
+
+```erlang
+-- ./env.config file
+-- :dev
+[{host, "app.dev"}].
+
+-- :prod
+[{host, "app.com"}].
+```
+
+We can parse this file like SQL queries (but comments with `%` isn't supported yet, you can create PR for this feature :)).
+
+```erlang
+> {ok, Config} = eql:compile("./env.config").
+%> {ok,[{prod,"[{host, \"app.com\"}]."},
+        {dev,"[{host, \"app.dev\"}]."}]}
+```
+
+`eql:compile/1` returns proplist of defined env configurations and we can parse each of them with simple helper:
+
+```erlang
+-module(config_helper).
+-export([load/2]).
+
+load(Env, Config) ->
+    parse(scan(proplists:get_value(Env, Config))).
+
+scan(undefined) ->
+    undefined;
+scan(String) ->
+    erl_scan:string(String).
+
+parse({ok, Tokens, _}) ->
+    erl_parse:parse_term(Tokens);
+parse(_) ->
+    undefined.
+```
+
+And use it like:
+
+```erlang
+> config_helper:load(prod, Config).
+%> {ok,[{host,"app.com"}]}
+> config_helper:load(dev, Config).
+%> {ok,[{host,"app.dev"}]}
+```
+
+This module already exist and named [`eql_config`](/src/eql_config.erl) for you.
 
 ---
 
