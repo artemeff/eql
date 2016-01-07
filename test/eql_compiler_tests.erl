@@ -35,4 +35,4 @@ test_file() ->
 
 from_examples_dir(File) ->
     {ok, Cwd} = file:get_cwd(),
-    filename:join([filename:dirname(Cwd), "examples", File]).
+    filename:join([Cwd, "examples", File]).

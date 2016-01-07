@@ -1,7 +1,8 @@
+*.o
+*.plt
 *.beam
 *.app
-.rebar
+_build
 .eunit
-/deps
 erl_crash.dump
 /src/eql_parser.erl
