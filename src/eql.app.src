@@ -4,4 +4,8 @@
   , {registered, []}
   , {applications, [kernel, stdlib]}
   , {env, []}
+
+  , {maintainers, ["Yuri Artemev"]}
+  , {licenses, ["MIT"]}
+  , {links, [{"GitHub", "https://github.com/artemeff/eql"}]}
   ]}.
