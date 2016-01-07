@@ -1,4 +1,4 @@
-### eql
+### eql [![Hex.pm](https://img.shields.io/hexpm/v/plug.svg)](eql)
 
 ---
 
