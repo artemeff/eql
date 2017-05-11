@@ -1,6 +1,7 @@
 -module(eql).
 -export([ compile/1
         , compile/2
+        , compile/3
         , new_tab/1
         , get_query/2
         ]).
@@ -10,6 +11,12 @@ compile(File) ->
         {ok, Source} -> eql_compiler:compile(Source);
         Error        -> Error
     end.
+
+compile(Tab, File, []) ->
+    compile(Tab, File);
+compile(Tab, File, [flush]) ->
+    ets:delete_all_objects(Tab),
+    compile(Tab, File).
 
 compile(Tab, File) ->
     case compile(File) of
