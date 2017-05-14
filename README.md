@@ -28,6 +28,12 @@ FROM users;
 SELECT *
 FROM users
 WHERE id = ?
+
+-- Just some description here
+-- :get_by_id
+SELECT *
+FROM :table
+WHERE id = ?
 ```
 
 In Erlang you can use this queries like functions:
@@ -36,10 +42,13 @@ In Erlang you can use this queries like functions:
 > {ok, Queries} = eql:compile("queries/user.sql"). % with path to your queries file
 > {ok, Q1} = eql:get_query(get_all_users, Queries).
 > {ok, Q2} = proplists:get_value(get_user_by_id, Queries).
+> {ok, Q3} = eql:get_query(get_by_id, Queries, [{table, "some_table"}]).
 > Q1.
-%> "SELECT * FROM users;"
+%> <<"SELECT * FROM users;">>
 > Q2.
-%> "SELECT * FROM users WHERE id = ?"
+%> <<"SELECT * FROM users WHERE id = ?">>
+> Q3.
+%> [<<"SELECT * FROM ">>,"some_table",<<" WHERE id = ?">>]
 ```
 
 ---
@@ -61,8 +70,8 @@ We can parse this file like SQL queries (but comments with `%` isn't supported y
 
 ```erlang
 > {ok, Config} = eql:compile("./env.config").
-%> {ok,[{prod,"[{host, \"app.com\"}]."},
-        {dev,"[{host, \"app.dev\"}]."}]}
+%> {ok,[{prod,<<"[{host, \"app.com\"}].">>},
+        {dev,<<"[{host, \"app.dev\"}].">>}]}
 ```
 
 `eql:compile/1` returns proplist of defined env configurations and we can parse each of them with simple helper:
@@ -76,8 +85,8 @@ load(Env, Config) ->
 
 scan(undefined) ->
     undefined;
-scan(String) ->
-    erl_scan:string(String).
+scan(IoList) ->
+    erl_scan:string(lists:flatten(io_lib:format("~s", [IoList]))).
 
 parse({ok, Tokens, _}) ->
     erl_parse:parse_term(Tokens);
@@ -105,3 +114,5 @@ This module already exist and named [`eql_config`](/src/eql_config.erl) for you.
 3. Commit your changes (`git commit -am 'add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+If you make changes to the neotoma PEG file, `src/eql_parse.peg` you must run `rebar3 as dev compile` to rebuild `src/eql_parse.erl`, then run `rebar3` commands like `compile` and `eunit` as normal.

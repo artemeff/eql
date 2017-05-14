@@ -1,0 +1,56 @@
+queries <- (querydef crlf?)* / ''
+`
+{ok, lists:flatten(Node)}
+`;
+
+querydef <- comment* name:(colon_name / name) comment* sql:query / ''
+`
+begin
+Trim = fun(String, Regex) -> re:replace(String, Regex, "", [global, {return,binary}]) end,
+LeftTrim = fun(X) -> Trim(X, "(^\\s+)") end,
+RightTrim = fun(X) -> Trim(X, "(\\s+$)") end,
+FullTrim = fun(X) -> Trim(X, "(^\\s+)|(\\s+$)") end,
+case [X || X <- proplists:get_value(sql, Node), X =/= <<>>] of
+  [A] ->
+    {proplists:get_value(name, Node), FullTrim(A)};
+  [Q | T] ->
+    T2 = case lists:reverse(T) of
+           [H | A] ->
+             H2 = RightTrim(H),
+             lists:reverse([H2 | A]);
+           _ ->
+             RightTrim(T)
+         end,
+    Query = [LeftTrim(Q) | [X || X <- T2, X =/= <<>>]],
+    {proplists:get_value(name, Node), Query}
+end
+end
+`;
+
+comment <- comment_marker space !":" !"name:" comment:(!crlf .)* crlf
+`
+iolist_to_binary(proplists:get_value(comment, Node))
+`;
+
+name <- comment_marker space "name:" space name:(!crlf .)+ crlf
+`binary_to_atom(iolist_to_binary(proplists:get_value(name, Node)), utf8)`;
+
+colon_name <- comment_marker space ":" name:(!crlf .)+ crlf
+`binary_to_atom(iolist_to_binary(proplists:get_value(name, Node)), utf8)`;
+
+query <- chars:substatement (param:param chars:substatement)*
+`
+lists:map(fun({param, P}) -> binary_to_atom(iolist_to_binary(P), utf8);
+             ({chars, C}) -> re:replace(iolist_to_binary(C), "\\n+", " ",
+                      [global,{return,binary}]);
+             (O) -> O
+          end, lists:flatten(Node))
+`;
+
+substatement <- (!':' !comment_marker .)* ~;
+
+param <- ":" key:(!' ' !crlf .)+ `proplists:get_value(key, Node)`;
+
+comment_marker <- "--" ~;
+space <- [ \t\n\s\r]* ~;
+crlf <- [\r]? [\n] ~;
