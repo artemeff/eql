@@ -51,6 +51,8 @@ In Erlang you can use this queries like functions:
 %> [<<"SELECT * FROM ">>,"some_table",<<" WHERE id = ?">>]
 ```
 
+*Note*: The named parameters like `:table` in the example above are not sanitized, so can be dangerous.
+
 ---
 
 ### Not only for SQL
