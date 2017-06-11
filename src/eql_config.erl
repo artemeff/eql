@@ -6,8 +6,8 @@ load(Env, Config) ->
 
 scan(undefined) ->
     undefined;
-scan(String) ->
-    erl_scan:string(String).
+scan(IoList) ->
+    erl_scan:string(lists:flatten(io_lib:format("~s", [IoList]))).
 
 parse({ok, Tokens, _}) ->
     erl_parse:parse_term(Tokens);
