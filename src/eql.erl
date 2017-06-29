@@ -36,7 +36,8 @@ compile(Tab, File) ->
 new_tab(Name) ->
     ets:new(Name, [named_table, set, {read_concurrency, true}]).
 
--spec get_query(atom(), query_list() | ets:tid(), [iolist()]) -> {ok, iolist()} | undefined.
+-spec get_query(atom(), query_list() | ets:tab(), proplists:proplist()) ->
+    {ok, iolist()} | undefined.
 get_query(Name, TidOrList, Params) ->
     case get_query(Name, TidOrList) of
         {ok, Query} ->
@@ -49,7 +50,7 @@ get_query(Name, TidOrList, Params) ->
             Other
     end.
 
--spec get_query(atom(), query_list() | ets:tid()) -> {ok, iolist()} | undefined.
+-spec get_query(atom(), query_list() | ets:tab()) -> {ok, iolist()} | undefined.
 get_query(Name, Tid) when is_reference(Tid)
                         ; is_atom(Tid) ->
     case ets:lookup(Tid, Name) of
