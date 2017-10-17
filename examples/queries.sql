@@ -1,3 +1,5 @@
+
+--
 -- Get all users from database
 -- :get_all_users
 SELECT *

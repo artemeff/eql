@@ -35,7 +35,7 @@ parse(Input) when is_binary(Input) ->
 
 -spec 'querydef'(input(), index()) -> parse_result().
 'querydef'(Input, Index) ->
-  p(Input, Index, 'querydef', fun(I,D) -> (p_choose([p_seq([p_zero_or_more(fun 'comment'/2), p_label('name', p_choose([fun 'colon_name'/2, fun 'name'/2])), p_zero_or_more(fun 'comment'/2), p_label('sql', fun 'query'/2)]), p_string(<<"">>)]))(I,D) end, fun(Node, _Idx) ->
+  p(Input, Index, 'querydef', fun(I,D) -> (p_seq([fun 'space'/2, p_zero_or_more(fun 'comment'/2), p_label('name', p_choose([fun 'colon_name'/2, fun 'name'/2])), p_zero_or_more(fun 'comment'/2), p_label('sql', fun 'query'/2)]))(I,D) end, fun(Node, _Idx) ->
 begin
 Trim = fun(String, Regex) -> re:replace(String, Regex, "", [global, {return,binary}]) end,
 LeftTrim = fun(X) -> Trim(X, "(^\\s+)") end,
@@ -60,9 +60,7 @@ end
 
 -spec 'comment'(input(), index()) -> parse_result().
 'comment'(Input, Index) ->
-  p(Input, Index, 'comment', fun(I,D) -> (p_seq([fun 'comment_marker'/2, fun 'space'/2, p_not(p_string(<<":">>)), p_not(p_string(<<"name:">>)), p_label('comment', p_zero_or_more(p_seq([p_not(fun 'crlf'/2), p_anything()]))), fun 'crlf'/2]))(I,D) end, fun(Node, _Idx) ->
-iolist_to_binary(proplists:get_value(comment, Node))
- end).
+  p(Input, Index, 'comment', fun(I,D) -> (p_choose([p_seq([fun 'comment_marker'/2, p_zero_or_more(p_charclass(<<"[\s\s]">>)), fun 'crlf'/2]), p_seq([fun 'comment_marker'/2, fun 'space'/2, p_not(p_string(<<":">>)), p_not(p_string(<<"name:">>)), p_zero_or_more(p_seq([p_not(fun 'crlf'/2), p_anything()])), fun 'crlf'/2])]))(I,D) end, fun(Node, _Idx) ->Node end).
 
 -spec 'name'(input(), index()) -> parse_result().
 'name'(Input, Index) ->
