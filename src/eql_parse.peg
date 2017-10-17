@@ -3,7 +3,7 @@ queries <- (querydef crlf?)* / ''
 {ok, lists:flatten(Node)}
 `;
 
-querydef <- comment* name:(colon_name / name) comment* sql:query / ''
+querydef <- space comment* name:(colon_name / name) comment* sql:query
 `
 begin
 Trim = fun(String, Regex) -> re:replace(String, Regex, "", [global, {return,binary}]) end,
@@ -27,10 +27,7 @@ end
 end
 `;
 
-comment <- comment_marker space !":" !"name:" comment:(!crlf .)* crlf
-`
-iolist_to_binary(proplists:get_value(comment, Node))
-`;
+comment <- comment_marker [ \s]* crlf / comment_marker space !":" !"name:" (!crlf .)* crlf ~;
 
 name <- comment_marker space "name:" space name:(!crlf .)+ crlf
 `binary_to_atom(iolist_to_binary(proplists:get_value(name, Node)), utf8)`;
