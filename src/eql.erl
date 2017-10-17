@@ -13,22 +13,32 @@
 -type query() :: binary() | [binary() | atom()].
 -type query_list() :: [{atom(), query()}].
 
+-type compile_opt() :: flush | %% delete all (or for this namespace) queries first
+                       namespace. %% store queries in ets table keyed on a 2-tuple of
+                                  %% the filename as an atom and the name of the query
+
 %% returns a list of
 -spec compile(file:filename_all()) -> {ok, query_list()} | any().
 compile(File) ->
     eql_parse:file(File).
 
-compile(Tab, File, []) ->
-    compile(Tab, File);
-compile(Tab, File, [flush]) ->
-    ets:delete_all_objects(Tab),
-    compile(Tab, File).
-
 compile(Tab, File) ->
+    compile(Tab, File, []).
+
+-spec compile(atom() | ets:tid(), file:filename_all(), [compile_opt()]) -> ok | any().
+compile(Tab, File, Opts) ->
+    maybe_flush(Tab, File, Opts),
     case compile(File) of
         {ok, Queries} when is_list(Queries) ->
-            ets:insert(Tab, Queries),
-            ok;
+            case proplists:get_value(namespace, Opts, false) of
+                true ->
+                    Namespace = file_to_namespace(File),
+                    true = ets:insert(Tab, [{{Namespace, Name}, Query} || {Name, Query} <- Queries]),
+                    ok;
+                false ->
+                    true = ets:insert(Tab, Queries),
+                    ok
+            end;
         Error ->
             Error
     end.
@@ -63,4 +73,24 @@ get_query(Name, Proplist) ->
     case lists:keyfind(Name, 1, Proplist) of
         {Name, Value} -> {ok, Value};
         false -> undefined
+    end.
+
+%% internal functions
+
+-spec file_to_namespace(file:filename_all()) -> atom().
+file_to_namespace(File) ->
+    list_to_atom(filename:rootname(filename:basename(File))).
+
+maybe_flush(Tab, File, Opts) ->
+    case proplists:get_value(flush, Opts, false) of
+        true ->
+            case proplists:get_value(namespace, Opts, false) of
+                true ->
+                    Namespace = file_to_namespace(File),
+                    ets:match_delete(Tab, {{Namespace, '_'}, '_'});
+                false ->
+                    ets:delete_all_objects(Tab)
+            end;
+        false ->
+            ok
     end.
