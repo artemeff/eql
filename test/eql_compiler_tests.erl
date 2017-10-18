@@ -7,6 +7,7 @@ eql_compiler_test_() -> {setup,
     , fun test_named_params/0
     , fun test_file/0
     , fun test_file_namespace/0
+    , fun test_file_named_params/0
     ]}.
 
 start() -> ok.
@@ -36,12 +37,18 @@ test_file() ->
     {ok, Queries} = eql_parse:parse(Source),
     ?assertMatch([ {get_all_users, <<"SELECT * FROM users">>}
                  , {get_user_by_id, <<"SELECT * FROM users WHERE id = ?">>}
-                 ], Queries).
+                 , {get_all_schema_users, [<<"SELECT * FROM ">>, schema, <<".users">>]}], Queries).
 
 test_file_namespace() ->
     eql:new_tab(test_tab),
     eql:compile(test_tab, from_examples_dir("queries.sql"), [namespace]),
     ?assertEqual({ok, <<"SELECT * FROM users">>}, eql:get_query({queries, get_all_users}, test_tab)).
+
+test_file_named_params() ->
+    eql:new_tab(test_tab2),
+    eql:compile(test_tab2, from_examples_dir("queries.sql")),
+    ?assertEqual({ok, [<<"SELECT * FROM ">>, <<"public">>, <<".users">>]},
+                 eql:get_query(get_all_schema_users, test_tab2, [{schema, <<"public">>}])).
 
 %%
 %% Helpers

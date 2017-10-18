@@ -86,7 +86,7 @@ lists:map(fun({param, P}) -> binary_to_atom(iolist_to_binary(P), utf8);
 
 -spec 'param'(input(), index()) -> parse_result().
 'param'(Input, Index) ->
-  p(Input, Index, 'param', fun(I,D) -> (p_seq([p_string(<<":">>), p_label('key', p_one_or_more(p_seq([p_not(p_string(<<"\s">>)), p_not(fun 'crlf'/2), p_anything()])))]))(I,D) end, fun(Node, _Idx) ->proplists:get_value(key, Node) end).
+  p(Input, Index, 'param', fun(I,D) -> (p_seq([p_string(<<":">>), p_label('key', p_one_or_more(p_seq([p_not(p_string(<<"\s">>)), p_not(p_string(<<".">>)), p_not(fun 'crlf'/2), p_anything()])))]))(I,D) end, fun(Node, _Idx) ->proplists:get_value(key, Node) end).
 
 -spec 'comment_marker'(input(), index()) -> parse_result().
 'comment_marker'(Input, Index) ->
