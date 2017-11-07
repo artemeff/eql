@@ -9,3 +9,8 @@ FROM users
 -- name: get_user_by_id
 SELECT * FROM
 users WHERE id = ?
+
+-- another comment
+-- name: get_all_schema_users
+SELECT *
+FROM :schema.users

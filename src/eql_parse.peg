@@ -46,7 +46,7 @@ lists:map(fun({param, P}) -> binary_to_atom(iolist_to_binary(P), utf8);
 
 substatement <- (!':' !comment_marker .)* ~;
 
-param <- ":" key:(!' ' !crlf .)+ `proplists:get_value(key, Node)`;
+param <- ":" key:([a-zA-Z0-9_-])+ `proplists:get_value(key, Node)`;
 
 comment_marker <- "--" ~;
 space <- [ \t\n\s\r]* ~;
