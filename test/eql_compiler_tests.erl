@@ -37,7 +37,8 @@ test_file() ->
     {ok, Queries} = eql_parse:parse(Source),
     ?assertMatch([ {get_all_users, <<"SELECT * FROM users">>}
                  , {get_user_by_id, <<"SELECT * FROM users WHERE id = ?">>}
-                 , {get_all_schema_users, [<<"SELECT * FROM ">>, schema, <<".users">>]}], Queries).
+                 , {get_all_schema_users, [<<"SELECT * FROM ">>, schema, <<".users">>]}
+                 , {accept_type_casts, <<"select '[{\"a\":\"foo\"},{\"b\":\"bar\"},{\"c\":\"baz\"}]'::json->2">>}], Queries).
 
 test_file_namespace() ->
     eql:new_tab(test_tab),

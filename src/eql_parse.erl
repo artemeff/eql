@@ -82,11 +82,11 @@ lists:map(fun({param, P}) -> binary_to_atom(iolist_to_binary(P), utf8);
 
 -spec 'substatement'(input(), index()) -> parse_result().
 'substatement'(Input, Index) ->
-  p(Input, Index, 'substatement', fun(I,D) -> (p_zero_or_more(p_seq([p_not(p_string(<<":">>)), p_not(fun 'comment_marker'/2), p_anything()])))(I,D) end, fun(Node, _Idx) ->Node end).
+  p(Input, Index, 'substatement', fun(I,D) -> (p_zero_or_more(p_seq([p_choose([p_not(p_string(<<":">>)), p_string(<<"::">>), p_seq([p_string(<<":">>), p_not(p_charclass(<<"[a-zA-Z0-9_-]">>))])]), p_not(fun 'comment_marker'/2), p_anything()])))(I,D) end, fun(Node, _Idx) ->Node end).
 
 -spec 'param'(input(), index()) -> parse_result().
 'param'(Input, Index) ->
-  p(Input, Index, 'param', fun(I,D) -> (p_seq([p_string(<<":">>), p_label('key', p_one_or_more(p_seq([p_not(p_string(<<"\s">>)), p_not(p_string(<<".">>)), p_not(fun 'crlf'/2), p_anything()])))]))(I,D) end, fun(Node, _Idx) ->proplists:get_value(key, Node) end).
+  p(Input, Index, 'param', fun(I,D) -> (p_seq([p_string(<<":">>), p_label('key', p_one_or_more(p_charclass(<<"[a-zA-Z0-9_-]">>)))]))(I,D) end, fun(Node, _Idx) ->proplists:get_value(key, Node) end).
 
 -spec 'comment_marker'(input(), index()) -> parse_result().
 'comment_marker'(Input, Index) ->

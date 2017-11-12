@@ -44,7 +44,7 @@ lists:map(fun({param, P}) -> binary_to_atom(iolist_to_binary(P), utf8);
           end, lists:flatten(Node))
 `;
 
-substatement <- (!':' !comment_marker .)* ~;
+substatement <- ((!':' / "::" / ":" ![a-zA-Z0-9_-] ) !comment_marker .)* ~;
 
 param <- ":" key:([a-zA-Z0-9_-])+ `proplists:get_value(key, Node)`;
 
