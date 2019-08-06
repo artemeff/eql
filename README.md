@@ -36,7 +36,7 @@ FROM :table
 WHERE id = ?
 ```
 
-In Erlang you can use this queries like functions:
+In Erlang you can use these queries like functions:
 
 ```erlang
 > {ok, Queries} = eql:compile("queries/user.sql"). % with path to your queries file
