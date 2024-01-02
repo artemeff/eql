@@ -51,11 +51,14 @@ new_tab(Name) ->
 get_query(Name, TidOrList, Params) ->
     case get_query(Name, TidOrList) of
         {ok, Query} ->
-            {ok, lists:map(fun(Key) when is_atom(Key) ->
+            case is_bitstring(Query) of
+                true -> {ok,Query};
+                false -> {ok, lists:map(fun(Key) when is_atom(Key) ->
                                proplists:get_value(Key, Params);
                               (S) ->
                                S
-                           end, Query)};
+                           end, Query)}
+            end;
         Other ->
             Other
     end.

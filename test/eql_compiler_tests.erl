@@ -8,6 +8,7 @@ eql_compiler_test_() -> {setup,
     , fun test_file/0
     , fun test_file_namespace/0
     , fun test_file_named_params/0
+    , fun test_eql_config/0
     ]}.
 
 start() -> ok.
@@ -35,10 +36,18 @@ test_named_params() ->
 test_file() ->
     {ok, Source}  = file:read_file(from_examples_dir("queries.sql")),
     {ok, Queries} = eql_parse:parse(Source),
-    ?assertMatch([ {get_all_users, <<"SELECT * FROM users">>}
-                 , {get_user_by_id, <<"SELECT * FROM users WHERE id = ?">>}
-                 , {get_all_schema_users, [<<"SELECT * FROM ">>, schema, <<".users">>]}
-                 , {accept_type_casts, <<"select '[{\"a\":\"foo\"},{\"b\":\"bar\"},{\"c\":\"baz\"}]'::json->2">>}], Queries).
+    ?assertMatch([
+        {get_all_users, <<"SELECT * FROM users">>}
+        , {get_user_by_id, <<"SELECT * FROM users WHERE id = ?">>}
+        , {get_all_schema_users, [<<"SELECT * FROM ">>, schema, <<".users">>]}
+        , {accept_type_casts, <<"select '[{\"a\":\"foo\"},{\"b\":\"bar\"},{\"c\":\"baz\"}]'::json->2">>}
+        ], Queries).
+
+test_eql_config() ->
+    {ok, DynamicConfigs}  = file:read_file(from_examples_dir("dynamic.conf.in")),
+    {ok, Queries} = eql_parse:parse(DynamicConfigs),
+    {ok, DynamicConfig} = eql_config:load(dynamic_config,Queries,[{value_a,"foo"},{value_b,"bar"},{value_c,"baz"}]),
+    ?assertMatch([{"a","foo"},{"b","bar"},{"c","baz"}],DynamicConfig).
 
 test_file_namespace() ->
     eql:new_tab(test_tab),
