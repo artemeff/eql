@@ -66,6 +66,14 @@ This library can provide anything you want with separated sections in file, eg f
 
 -- :prod
 [{host, "app.com"}].
+
+-- :host_variable
+[
+    {host, ":host"},
+    {port, :port},
+    {min_max, [:min,:max]},
+    {bitstring, <<":bitstring">>}
+].
 ```
 
 We can parse this file like SQL queries (but comments with `%` isn't supported yet, you can create PR for this feature :)).
@@ -80,10 +88,27 @@ We can parse this file like SQL queries (but comments with `%` isn't supported y
 
 ```erlang
 -module(config_helper).
--export([load/2]).
+
+-export([load/2, load/3]).
 
 load(Env, Config) ->
-    parse(scan(proplists:get_value(Env, Config))).
+    case eql:get_query(Env,Config) of
+        {ok,ResolvedConfig} ->
+        case is_bitstring(ResolvedConfig) of
+            true -> parse(scan(ResolvedConfig));
+            false -> {error,"Missing variables"}
+        end;
+        {error,Error} -> {error,Error}
+    end.
+
+load(Env, Config,Variables) ->
+    case eql:get_query(Env,Config,Variables) of
+
+        {ok,ResolvedConfig} ->
+            ScanResult = scan(ResolvedConfig),
+            parse(ScanResult);
+        {error,Error} -> {error,Error}
+    end.
 
 scan(undefined) ->
     undefined;
@@ -94,6 +119,7 @@ parse({ok, Tokens, _}) ->
     erl_parse:parse_term(Tokens);
 parse(_) ->
     undefined.
+
 ```
 
 And use it like:
@@ -101,11 +127,26 @@ And use it like:
 ```erlang
 > config_helper:load(prod, Config).
 %> {ok,[{host,"app.com"}]}
+
 > config_helper:load(dev, Config).
 %> {ok,[{host,"app.dev"}]}
+
+> eql_config:load(host_variable,Config,[
+    {host,"injected.com"},
+    {port,"80"},
+    {min,"1"},
+    {max,"255"},
+    {bitstring,"OemPaLoempa"}
+]).
+%> {ok,[
+     {host,"injected.com"},
+     {port,80},
+     {min_max,[1,255]},
+     {bitstring,<<"OemPaLoempa">>}
+   ]}
 ```
 
-This module already exist and named [`eql_config`](/src/eql_config.erl) for you.
+This module already exist and is named [`eql_config`](/src/eql_config.erl).
 
 ---
 

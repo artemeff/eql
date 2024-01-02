@@ -1,0 +1,7 @@
+-- Example to test the new eql_config:load/3 command
+-- name: dynamic_config
+[
+    {"a",":value_a"},
+    {"b",":value_b"},
+    {"c",":value_c"}
+].
